@@ -6,6 +6,7 @@
 program radix
     ! Variable Declaration
     real :: numbers(5000)
+    character(len = 30) :: filename
     
     
 
@@ -19,8 +20,10 @@ program radix
 
 
     ! Output data to a file
+    write (*,*) "What file name would you like to write to? (include .txt): "
+    read (*,*) filename
 
-
+    call fileWriter(numbers, filename)
 
     !Close files and quit
 
@@ -31,7 +34,7 @@ program radix
         
         real :: numbers(5000)
         character (len=25) :: fname
-        integer :: i
+        integer :: i, end
 
         write (*,*) "Please give an input file name: "
         !read (*,*) fname
@@ -46,9 +49,9 @@ program radix
         Open( 10, file = 'inputs.txt' )
         i = 0
         Do
-            Read( 10, *) numbers(i)
-            i = i + 1
-        End Do
+            Read( 10, *, end = 1 ) data
+           i = i + 1
+         End Do
 
         close(10)
 
@@ -59,8 +62,7 @@ program radix
     subroutine radixSort(numbers)
 
         ! Variable Declaration
-        real :: numbers(5000)
-        real :: highest, numDigits, output(5000)
+        real :: numbers(5000), highest, numDigits, output(5000)
         integer :: digits
         
 
@@ -73,34 +75,39 @@ program radix
         digits = FLOOR( LOG(highest)/LOG(numDigits))
 
         do i = 1, digits 
-            output = countingSort(output, i, numDigits)
+            call countingSort(output, i, numDigits)
+        end do
+
+        do i = 1, 5000
+            write (*,*) output(i)
         end do
 
     end
 
-    real function countingSort(nums, digit, base)
-        real:: b(5000), c(INT(base)), digit_of_Ai, num(5000)
-        integer :: i, j
+    subroutine countingSort(nums, digit, base)
+        real:: b(5000), c(INT(base)), digit_of_Ai, nums(5000)
+        integer :: i, j, digit
+        
 
         do i = 0, 5000
             digit_of_Ai = MODULO( (nums(i)/base ** digit), base)
             c(INT(digit_of_Ai)) = c(INT(digit_of_Ai)) + 1
         end do
 
-        do j = 1, base
+        do j = 1, INT(base)
             c(j) = c(j) + c(j-1)
         end do
 
         i = 5000
         do while (i >= 0)
-            digit_of_Ai = modulo(nums(m)/radix**digit, radix)
+            digit_of_Ai = modulo(nums(i)/base**digit, base)
             c(INT(digit_of_Ai)) = c(INT(digit_of_Ai)) - 1
-            b(INT(c(INT(digit_of_Ai)))) = nums(m)
+            b(INT(c(INT(digit_of_Ai)))) = nums(i)
 
             i = i -1
         end do
 
-        countingSort = b
+        nums = b
 
     end
 
@@ -119,3 +126,30 @@ program radix
 
         end do
     end
+
+    ! File writer adapted from code written by Michael Wirth
+    ! From https://craftofcoding.wordpress.com/2018/02/22/coding-fortran-file-i-o/
+    ! On April 4th, 2021 (Happy Easter!)
+    subroutine fileWriter(numbers, fname)
+
+        character (len=25) :: fname
+        integer :: i,n,fsize
+        logical :: lexist
+        character :: formL
+
+        inquire(file=fname, exist=lexist, form=formL, size=fsize)
+        if (lexist) then
+            write(*,*) 'File exists and is ', formL
+            write(*,*) 'The file is ',fsize,' bytes in size'
+            write(*,*) 'It will be overwritten'
+            open(unit=20,file=fname,status='replace',action='write')
+        else
+            write (*,*) 'File does not exist - will be created.'
+            open(unit=20,file=fname,status='new',action='write')
+        end if
+
+        do i = 1,n
+            write(20,*) numbers(i)
+        end do
+        close(20)
+    end 
