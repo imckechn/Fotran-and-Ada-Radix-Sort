@@ -7,13 +7,11 @@ program radix
     ! Variable Declaration
     real :: numbers(5000)
     character(len = 30) :: filename
-    
-    
 
 
     ! Read in data from file
     call getInputs(numbers)
-    write (*,*) "FInished"
+    write (*,*) "Finished"
 
     !Perform Radix Sort
     call radixSort(numbers)
@@ -25,7 +23,7 @@ program radix
 
     call fileWriter(numbers, filename)
 
-    !Close files and quit
+    ! Close files and quit
 
     end
 
@@ -34,17 +32,12 @@ program radix
         
         real :: numbers(5000)
         character (len=25) :: fname
-        integer :: i, end
+        integer :: i
+        logical :: end
 
         write (*,*) "Please give an input file name: "
         !read (*,*) fname
         fname = "inputs.txt"
-
-        !inquire(file=fname, exist=lexist, form=formL, size=fsize)
-        !if (lexist eq. False) then
-        !    open (2, file = 'inputs.txt', status = 'old')
-
-        !end if
 
         Open( 10, file = 'inputs.txt' )
         i = 0
@@ -85,9 +78,8 @@ program radix
     end
 
     subroutine countingSort(nums, digit, base)
+        integer :: i, j, digit, base
         real:: b(5000), c(INT(base)), digit_of_Ai, nums(5000)
-        integer :: i, j, digit
-        
 
         do i = 0, 5000
             digit_of_Ai = MODULO( (nums(i)/base ** digit), base)
