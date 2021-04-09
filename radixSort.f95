@@ -5,7 +5,7 @@
 
 program radix
     ! Variable Declaration
-    real :: numbers(5000)
+    integer :: numbers(5000)
     character(len = 30) :: filename
     write (*,*) "A"
 
@@ -19,10 +19,13 @@ program radix
     call radixSort(numbers)
     write (*,*) "C"
 
+    write (*,*) "numbers(0) =", numbers(1)
+
 
     ! Output data to a file
     write (*,*) "What file name would you like to write to? (include .txt): "
-    read (*,*) filename
+    !read (*,*) filename
+    filename = "o.txt"
     
     write (*,*) "D"
     call fileWriter(numbers, filename)
@@ -35,7 +38,7 @@ program radix
 ! --- Functions ---
     subroutine getInputs(numbers)
         
-        real :: numbers(5000)
+        integer :: numbers(5000)
         character (len=25) :: fname
         integer :: i
 
@@ -44,26 +47,23 @@ program radix
         fname = "inputs.txt"
 
         Open( 10, file = 'inputs.txt' )
-        i = 0
+        i = 1
         Do
             Read( 10, *, End = 1 ) data
-            numbers(i) = real(data)
+            numbers(i) = int(data)
             i = i + 1
         End Do
         1 write (*,*) "End of file reached";
 
         close(10)
 
-        end
-        
+    end    
 
     
     subroutine radixSort(numbers)
 
         ! Variable Declaration
-        real :: numbers(5000), highest, output(5000), numDigits
-        integer :: digits
-        
+        integer :: numbers(5000), highest, output(5000), numDigits        
 
         call max(numbers, highest)
         write (*,*) "Max = ", highest
@@ -73,83 +73,75 @@ program radix
         numDigits = 4
 
         write (*,*) "1"
-        digits = FLOOR( LOG(highest)/LOG(numDigits))
-        write (*,*) "digits = ", digits
-        do i = 1, digits 
-            call countingSort(output, i, numDigits)
+
+        i = 1
+        do while (highest / i > 0)
+            call countingSort(output, 5000, i)
+            i = i * 10
+
+            write (*,*) "completed loop"
         end do
         write (*,*) "3"
 
-        do i = 1, 5000
-            write (*,*) output(i)
-        end do
+        numbers = output
 
     end
 
-    subroutine countingSort(nums, digit, base)
-        real :: base, temp, nums(5000), output(5000), count(10)
-        integer :: i, digit, arraySize
+    subroutine countingSort(nums, arrLength, digit)
+        integer :: arrLength, temp, nums(arrLength), output(arrLength), count(10)
+        integer :: i, digit
         
-        write (*,*) "STARTING"
-
-        arraySize = 5000
+        write (*,*) "STARTING, digit = "
         count = 0 ! Initialize the whole array to zeros
 
-        write (*,*) "1"
-        do i = 1, arraySize
-            write (*,*) "A.1"
-            if (nums == null) then
-                continue
-            end if
 
 
-            temp = mod( nums(i) / digit, base) + 1
-            write (*,*) "B.1, temp= ", temp
-            write (*,*) "nums(i)= ", nums(i)
-            write (*,*) "digit= ", digit
-            write (*,*) "i= ", i
-            
-            if (temp <= 0 ) then
-                exit
-            else if (temp > 10) then
-                exit
-            end if
-            
-            write (*,*) "C.1, count(temp) = ", count(int(temp))
-            count(int(temp)) =  count(int(temp)) + 1
-            write (*,*) "D.1"
+        !write (*,*) "1"
+        do i = 1, arrLength
+            temp = mod( nums(i) / digit, 10) + 1    ! plus one as arrays start at element 1
+
+            count(temp) =  count(temp) + 1
         end do
+        write (*,*) count
 
-        write (*,*) "2"
-        do i = 1, int(base)
-            count(i) = count(i - 1)
+
+
+        do i = 2, 10
+            count(i) = count(i) + count(i - 1)
         end do
+        !write (*,*) "Count after ", count
+
+
 
         write (*,*) "3"
-        do i = arraySize, 1, -1
-            write (*,*) "A.3"
-            write (*,*) "nums = ", i
-            temp = mod(nums(i) / digit, base)
-            write (*,*) "B.3"
-            output( int(count( int(temp))) - 1) = nums(i)
-            write (*,*) "C.3"
+        do i = arrLength, 1, -1
 
-            count(int(temp)) = count(int(temp)) - 1
-            write (*,*) "D.3"
+            temp = mod( nums(i) / digit, 10) + 1
+
+            if ( count(temp) > 5000) then
+                write (*,*) "temp = ", temp
+                write (*,*) "count at temp", count( temp )
+            
+            else if ( count(temp) < 1) then
+                write (*,*) "temp = ", temp
+                write (*,*) "count at temp", count( temp )
+            end if
+
+            output( count( temp)) = nums(i)
+
+            
+            count(temp) = count(temp) - 1
         end do
-
         write (*,*) "4"
-        do i = 1, arraySize
-            nums(i) = output(i)
-        end do
 
+        nums = output
         write (*,*) "FINISHED"
     end
 
     subroutine max(numbers, highest)
 
-        real :: numbers(5000)
-        real :: highest
+        integer :: numbers(5000)
+        integer :: highest
         integer :: i
 
         highest = numbers(1)
@@ -167,7 +159,7 @@ program radix
     ! On April 4th, 2021 (Happy Easter!)
     subroutine fileWriter(numbers, fname)
 
-        real :: numbers(5000)
+        integer :: numbers(5000)
         character (len=30) :: fname
         integer :: i,n,fsize
         logical :: lexist
@@ -186,7 +178,7 @@ program radix
             open(unit=20,file=fname,status='new',action='write')
         end if
 
-        do i = 1,n -1
+        do i = 1,n
             write(20,*) numbers(i)
         end do
         close(20)
