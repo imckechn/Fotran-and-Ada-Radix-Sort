@@ -7,21 +7,26 @@ program radix
     ! Variable Declaration
     real :: numbers(5000)
     character(len = 30) :: filename
+    write (*,*) "A"
 
+    numbers = 0
 
     ! Read in data from file
     call getInputs(numbers)
-    write (*,*) "Finished"
+    write (*,*) "B"
 
     !Perform Radix Sort
     call radixSort(numbers)
+    write (*,*) "C"
 
 
     ! Output data to a file
     write (*,*) "What file name would you like to write to? (include .txt): "
     read (*,*) filename
-
+    
+    write (*,*) "D"
     call fileWriter(numbers, filename)
+    write (*,*) "E"
 
     ! Close files and quit
 
@@ -33,7 +38,6 @@ program radix
         real :: numbers(5000)
         character (len=25) :: fname
         integer :: i
-        logical :: end
 
         write (*,*) "Please give an input file name: "
         !read (*,*) fname
@@ -42,9 +46,11 @@ program radix
         Open( 10, file = 'inputs.txt' )
         i = 0
         Do
-            Read( 10, *, end = 1 ) data
-           i = i + 1
-         End Do
+            Read( 10, *, End = 1 ) data
+            numbers(i) = real(data)
+            i = i + 1
+        End Do
+        1 write (*,*) "End of file reached";
 
         close(10)
 
@@ -55,7 +61,7 @@ program radix
     subroutine radixSort(numbers)
 
         ! Variable Declaration
-        real :: numbers(5000), highest, numDigits, output(5000)
+        real :: numbers(5000), highest, output(5000), numDigits
         integer :: digits
         
 
@@ -65,11 +71,14 @@ program radix
 
         output = numbers
         numDigits = 4
-        digits = FLOOR( LOG(highest)/LOG(numDigits))
 
+        write (*,*) "1"
+        digits = FLOOR( LOG(highest)/LOG(numDigits))
+        write (*,*) "digits = ", digits
         do i = 1, digits 
             call countingSort(output, i, numDigits)
         end do
+        write (*,*) "3"
 
         do i = 1, 5000
             write (*,*) output(i)
@@ -78,29 +87,63 @@ program radix
     end
 
     subroutine countingSort(nums, digit, base)
-        integer :: i, j, digit, base
-        real:: b(5000), c(INT(base)), digit_of_Ai, nums(5000)
+        real :: base, temp, nums(5000), output(5000), count(10)
+        integer :: i, digit, arraySize
+        
+        write (*,*) "STARTING"
 
-        do i = 0, 5000
-            digit_of_Ai = MODULO( (nums(i)/base ** digit), base)
-            c(INT(digit_of_Ai)) = c(INT(digit_of_Ai)) + 1
+        arraySize = 5000
+        count = 0 ! Initialize the whole array to zeros
+
+        write (*,*) "1"
+        do i = 1, arraySize
+            write (*,*) "A.1"
+            if (nums == null) then
+                continue
+            end if
+
+
+            temp = mod( nums(i) / digit, base) + 1
+            write (*,*) "B.1, temp= ", temp
+            write (*,*) "nums(i)= ", nums(i)
+            write (*,*) "digit= ", digit
+            write (*,*) "i= ", i
+            
+            if (temp <= 0 ) then
+                exit
+            else if (temp > 10) then
+                exit
+            end if
+            
+            write (*,*) "C.1, count(temp) = ", count(int(temp))
+            count(int(temp)) =  count(int(temp)) + 1
+            write (*,*) "D.1"
         end do
 
-        do j = 1, INT(base)
-            c(j) = c(j) + c(j-1)
+        write (*,*) "2"
+        do i = 1, int(base)
+            count(i) = count(i - 1)
         end do
 
-        i = 5000
-        do while (i >= 0)
-            digit_of_Ai = modulo(nums(i)/base**digit, base)
-            c(INT(digit_of_Ai)) = c(INT(digit_of_Ai)) - 1
-            b(INT(c(INT(digit_of_Ai)))) = nums(i)
+        write (*,*) "3"
+        do i = arraySize, 1, -1
+            write (*,*) "A.3"
+            write (*,*) "nums = ", i
+            temp = mod(nums(i) / digit, base)
+            write (*,*) "B.3"
+            output( int(count( int(temp))) - 1) = nums(i)
+            write (*,*) "C.3"
 
-            i = i -1
+            count(int(temp)) = count(int(temp)) - 1
+            write (*,*) "D.3"
         end do
 
-        nums = b
+        write (*,*) "4"
+        do i = 1, arraySize
+            nums(i) = output(i)
+        end do
 
+        write (*,*) "FINISHED"
     end
 
     subroutine max(numbers, highest)
@@ -111,7 +154,7 @@ program radix
 
         highest = numbers(1)
 
-        do i = 2, 5000 
+        do i = 2, 4999 
             if (numbers(i) > highest) then 
                 highest = numbers(i)
             end if
@@ -124,10 +167,13 @@ program radix
     ! On April 4th, 2021 (Happy Easter!)
     subroutine fileWriter(numbers, fname)
 
-        character (len=25) :: fname
+        real :: numbers(5000)
+        character (len=30) :: fname
         integer :: i,n,fsize
         logical :: lexist
         character :: formL
+
+        n = 5000
 
         inquire(file=fname, exist=lexist, form=formL, size=fsize)
         if (lexist) then
@@ -140,7 +186,7 @@ program radix
             open(unit=20,file=fname,status='new',action='write')
         end if
 
-        do i = 1,n
+        do i = 1,n -1
             write(20,*) numbers(i)
         end do
         close(20)
