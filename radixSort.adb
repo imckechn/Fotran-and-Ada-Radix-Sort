@@ -212,27 +212,16 @@ procedure radixsort is
 
     -- This runs and times the radix sort and returns the time in nanoseconds
     procedure Query_Performance( numbers : in out numberArray ) is
-        type Proc_Access is access procedure(numbers : in out numberArray);
-        function Time_It(Action : in out Proc_Access; Arg : in out  numberArray) return Duration is
-            Start_Time : constant Time := Clock;
-            Finis_Time : Time;
-            Func_Arg : constant numberArray := Arg;
-        begin
-            Action(Func_Arg);
-            Finis_Time := Clock;
-            return Finis_Time - Start_Time;
-        end Time_It;
-        
-        procedure Identity(numbers : in out numberArray) is
-        begin
-            radixSort(numbers);
-        end Identity;
-        
-        
-        Id_Access : Proc_Access := Identity'access;
-    
+
+        Start_Time : Time;
+        Finis_Time : Time;
+
     begin
-        Put_Line("Identity(4) takes" & Duration'Image(Time_It(Id_Access, numbers)) & " seconds.");
+        Start_Time := Clock;
+        radixSort(numbers);
+        Finis_Time := Clock;
+
+        Put_Line("Radix sort takes" & Duration'Image(Finis_Time - Start_Time) & " seconds.");
     end Query_Performance;
 
 
@@ -244,11 +233,8 @@ begin
     -- Read in data from file
     fileReader(numbers);
 
-    -- Perform Radix Sort and time it
+    -- This calls radix sort adn times it
     Query_Performance(numbers);
-    --radixSort(numbers);
-    
-
 
     -- Output data to a file
     fileWriter(numbers);
