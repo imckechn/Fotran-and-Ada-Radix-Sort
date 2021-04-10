@@ -6,36 +6,35 @@
 program radix
     ! Variable Declaration
     integer :: numbers(5000)
-    character(len = 30) :: filename
-    write (*,*) "A"
+    integer(kind=8) :: count1, count2, count_rate, count_max
 
+    
     numbers = 0
 
     ! Read in data from file
     call getInputs(numbers)
-    write (*,*) "B"
 
     !Perform Radix Sort
+    call system_clock(count1, count_rate, count_max)
     call radixSort(numbers)
-    write (*,*) "C"
-
-    write (*,*) "numbers(0) =", numbers(1)
+    call system_clock(count2, count_rate, count_max)
 
 
-    ! Output data to a file
-    write (*,*) "What file name would you like to write to? (include .txt): "
-    !read (*,*) filename
-    filename = "o.txt"
-    
-    write (*,*) "D"
-    call fileWriter(numbers, filename)
-    write (*,*) "E"
+    write (*,*) "Time taken = "
+    print *, count2 - count1
+    write (*,*) "Nanoseconds"
+
+
+    ! Output data to a file   
+    call fileWriter(numbers)
 
     ! Close files and quit
 
     end
 
 ! --- Functions ---
+
+    ! This gets the inputs from the given file and stores it in the numbers array
     subroutine getInputs(numbers)
         
         integer :: numbers(5000)
@@ -43,8 +42,7 @@ program radix
         integer :: i
 
         write (*,*) "Please give an input file name: "
-        !read (*,*) fname
-        fname = "inputs.txt"
+        read (*,*) fname
 
         Open( 10, file = 'inputs.txt' )
         i = 1
@@ -53,91 +51,63 @@ program radix
             numbers(i) = int(data)
             i = i + 1
         End Do
-        1 write (*,*) "End of file reached";
-
-        close(10)
+        1 close(10)
 
     end    
 
-    
+    ! This is the radix sort interface. It sets everything up for the main subroutine, countingSort, 
+    ! to do the actual number moving. 
     subroutine radixSort(numbers)
 
         ! Variable Declaration
         integer :: numbers(5000), highest, output(5000), numDigits        
 
         call max(numbers, highest)
-        write (*,*) "Max = ", highest
-
 
         output = numbers
         numDigits = 4
-
-        write (*,*) "1"
 
         i = 1
         do while (highest / i > 0)
             call countingSort(output, 5000, i)
             i = i * 10
 
-            write (*,*) "completed loop"
         end do
-        write (*,*) "3"
 
         numbers = output
 
     end
 
+    ! This does all the actual sorting in the algorithm. It movies through all the numbers, one digit at a time
+    ! sorting each one until it is completed.
     subroutine countingSort(nums, arrLength, digit)
         integer :: arrLength, temp, nums(arrLength), output(arrLength), count(10)
         integer :: i, digit
         
-        write (*,*) "STARTING, digit = "
         count = 0 ! Initialize the whole array to zeros
 
-
-
-        !write (*,*) "1"
         do i = 1, arrLength
             temp = mod( nums(i) / digit, 10) + 1    ! plus one as arrays start at element 1
 
             count(temp) =  count(temp) + 1
         end do
-        write (*,*) count
-
-
 
         do i = 2, 10
             count(i) = count(i) + count(i - 1)
         end do
-        !write (*,*) "Count after ", count
 
-
-
-        write (*,*) "3"
         do i = arrLength, 1, -1
 
             temp = mod( nums(i) / digit, 10) + 1
-
-            if ( count(temp) > 5000) then
-                write (*,*) "temp = ", temp
-                write (*,*) "count at temp", count( temp )
-            
-            else if ( count(temp) < 1) then
-                write (*,*) "temp = ", temp
-                write (*,*) "count at temp", count( temp )
-            end if
-
             output( count( temp)) = nums(i)
-
-            
             count(temp) = count(temp) - 1
+
         end do
-        write (*,*) "4"
 
         nums = output
-        write (*,*) "FINISHED"
     end
 
+    ! This finds the maximum value in the array of numbers. 
     subroutine max(numbers, highest)
 
         integer :: numbers(5000)
@@ -146,7 +116,7 @@ program radix
 
         highest = numbers(1)
 
-        do i = 2, 4999 
+        do i = 2, 5000 
             if (numbers(i) > highest) then 
                 highest = numbers(i)
             end if
@@ -157,7 +127,7 @@ program radix
     ! File writer adapted from code written by Michael Wirth
     ! From https://craftofcoding.wordpress.com/2018/02/22/coding-fortran-file-i-o/
     ! On April 4th, 2021 (Happy Easter!)
-    subroutine fileWriter(numbers, fname)
+    subroutine fileWriter(numbers)
 
         integer :: numbers(5000)
         character (len=30) :: fname
@@ -166,6 +136,8 @@ program radix
         character :: formL
 
         n = 5000
+
+        fname = "sortedF.txt"
 
         inquire(file=fname, exist=lexist, form=formL, size=fsize)
         if (lexist) then
